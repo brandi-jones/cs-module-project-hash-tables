@@ -22,7 +22,8 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
-
+        self.hashtable = [None] * capacity #initalize with empty array
+        self.capacity = capacity
 
     def get_num_slots(self):
         """
@@ -35,6 +36,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len(self.hashtable)
 
 
     def get_load_factor(self):
@@ -65,13 +67,40 @@ class HashTable:
         # Your code here
 
 
+        #doesn't work
+        # hash = 5381
+
+        # bytes_representation = key.encode()
+
+        # for byte in bytes_representation:
+        #     hash = ((hash << 5 + hash) + byte)
+        
+        # return (hash)
+
+        #works
+        hash = 5381
+
+        for c in key:
+            hash = (hash * 33 + ord(c)) #ord() returns integer representing the unicode character
+        
+        return (hash % self.capacity)
+
+        #works
+        # hash = 5381
+        # byte_array = key.encode()
+        # for byte in byte_array:
+        #     hash = ((hash * 33) ^ byte) % 0x100000000
+
+        # return hash % self.capacity
+
+
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.djb2(key) % len(self.hashtable)
 
     def put(self, key, value):
         """
@@ -82,6 +111,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.hashtable[self.djb2(key)] = value
 
 
     def delete(self, key):
@@ -93,6 +123,11 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        if self.hashtable[self.djb2(key)]:
+            self.hashtable[self.djb2(key)] = None
+        else:
+            print('Key not found')
+        
 
 
     def get(self, key):
@@ -104,6 +139,11 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        if self.hashtable[self.djb2(key)]:
+            return self.hashtable[self.djb2(key)]
+        else:
+            return None
+        
 
 
     def resize(self, new_capacity):
