@@ -1,7 +1,19 @@
 def no_dups(s):
     # Your code here
+    table = {}
 
+    #loop over every word in string, and add each word to a table as a key
+    for word in s.split():
+        if not word in table:
+            table[word] = 1
 
+    #map over keys in table, append each to returnString as well as a whitespace
+    returnString = ''
+    for x in table:
+        returnString+= x
+        returnString+= ' ' 
+
+    return returnString[:-1] #remove last element from returnString as it has an extra whitespace
 
 if __name__ == "__main__":
     print(no_dups(""))
