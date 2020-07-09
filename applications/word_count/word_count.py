@@ -1,5 +1,24 @@
 def word_count(s):
     # Your code here
+    dictionary = {}
+        
+    ignoreCharacters = '" : ; , . - + = / \ | [ ] { } ( ) * ^ &'
+
+    for char in ignoreCharacters:
+        s = s.replace(char, ' ')
+
+    print(s)
+
+    for word in s.split():
+
+        #if word exists in dictionary as a key already, increase count by 1
+        if word.lower() in dictionary:
+            dictionary[word.lower()]+=1
+        #if word is not yet in the dictionary, add it and set count to 1
+        else:
+            dictionary[word.lower()] = 1
+
+    return dictionary
 
 
 

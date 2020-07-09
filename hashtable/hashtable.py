@@ -22,7 +22,9 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
-
+        self.hashtable = [None] * capacity #initalize with empty array
+        self.capacity = capacity
+        self.itemsContained = 0
 
     def get_num_slots(self):
         """
@@ -35,6 +37,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len(self.hashtable)
 
 
     def get_load_factor(self):
@@ -44,6 +47,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return (self.itemsContained / self.get_num_slots())
+
 
 
     def fnv1(self, key):
@@ -65,13 +70,40 @@ class HashTable:
         # Your code here
 
 
+        #doesn't work
+        # hash = 5381
+
+        # bytes_representation = key.encode()
+
+        # for byte in bytes_representation:
+        #     hash = ((hash << 5 + hash) + byte)
+        
+        # return (hash)
+
+        #works
+        hash = 5381
+
+        for c in key:
+            hash = (hash * 33 + ord(c)) #ord() returns integer representing the unicode character
+        
+        return (hash % self.capacity)
+
+        #works
+        # hash = 5381
+        # byte_array = key.encode()
+        # for byte in byte_array:
+        #     hash = ((hash * 33) ^ byte) % 0x100000000
+
+        # return hash % self.capacity
+
+
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.djb2(key) % len(self.hashtable)
 
     def put(self, key, value):
         """
@@ -83,6 +115,34 @@ class HashTable:
         """
         # Your code here
 
+        #if empty spot in hashtable array
+        if (self.hashtable[self.djb2(key)] == None):
+            self.hashtable[self.djb2(key)] = HashTableEntry(key, value)
+            self.itemsContained+=1
+        else:
+            current = self.hashtable[self.djb2(key)] #initialize current
+
+            #loop until you find the node with .next value as None (the end of the linked list)
+            while (current.next != None):
+                #if at any point current.key == key you are searching for, then replace value accordingly
+                if (current.key == key):
+                    current.value = value
+                    return
+                current = current.next
+
+            #if current.key == key you are searching for, then replace value accordingly
+            #need this additional check here for replacing values, as the previous loop doesn't check at the tail node that could be the node needed to be replaced
+            if (current.key == key):
+                current.value = value
+                return
+
+            #set next of the end node to the value you want to add to the next in line in the linked list
+            current.next = HashTableEntry(key, value)
+            self.itemsContained+=1
+
+            
+        
+
 
     def delete(self, key):
         """
@@ -93,6 +153,37 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        #if hashtable at that index is not empty
+        if self.hashtable[self.djb2(key)]:
+            
+            #if only 1 item in the hashable at that index
+            if self.hashtable[self.djb2(key)].next == None:
+                self.hashtable[self.djb2(key)] = None
+                return
+            #if more than 1 item in the hashtable at that index
+            else:
+                current = self.hashtable[self.djb2(key)] #initialize current
+                prev = None
+
+                #loop over entire linked list until found correct node
+                while (current != None):
+                    #if found node to delete
+                    if (current.key == key):
+                        #if prev is none (so we are at the head of the linked list)
+                        if (prev == None):
+                            self.hashtable[self.djb2(key)] = current.next #make new head of linked list the next node after the head
+                        else:
+                            prev.next = current.next #link prev and current next node together to unnattach deleted node
+                        return
+
+                    #reassign prev and current if item was not found
+                    prev = current
+                    current = current.next
+                    
+
+        else:
+            print('Key not found')
+        
 
 
     def get(self, key):
@@ -105,6 +196,28 @@ class HashTable:
         """
         # Your code here
 
+        #if hashtable is not empty at that point in the array
+        if self.hashtable[self.djb2(key)]:
+            #if hashtable has only 1 node at that point in the array AND that node has the exact key currently being looked for
+            if (self.hashtable[self.djb2(key)].next == None and self.hashtable[self.djb2(key)].key == key):
+                return self.hashtable[self.djb2(key)].value
+
+            #if hashtable has more than 1 node at that point in the array
+            else:
+                current = self.hashtable[self.djb2(key)] #initialize current
+
+                #loop over entire linked list until found correct node
+                while (current != None):
+                    if (current.key == key):
+                        return current.value
+
+                    #reassign current if item was not found
+                    current = current.next
+
+        else:
+            return None
+        
+
 
     def resize(self, new_capacity):
         """
@@ -114,6 +227,19 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        if (self.get_load_factor() > 0.7):
+            oldHashtable = self.hashtable
+            self.capacity = new_capacity
+            self.hashtable = [None] * new_capacity
+
+            for item in oldHashtable:
+                current = item
+
+                #loop over entire linked list
+                while (current != None):
+                    self.put(current.key, current.value) #add item to the new hashtable
+                    current = current.next #reassign current to the next node in the list
+                
 
 
 
